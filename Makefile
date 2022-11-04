@@ -1,4 +1,4 @@
-I_FLAG := -I./include/ -I./lib/stack/include/
+I_FLAG := -I./include/ -I./lib/stack/include/ -I./inc/
 
 CC:= g++
 CFLAGS := -g -lm $(I_FLAG) #-Wall -fsanitize=address
