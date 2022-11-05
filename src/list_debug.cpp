@@ -232,13 +232,21 @@ int graphDumpHtml(List *list)
 {
     FILE *graph_log = fopen("graph_log.html", "w");
     
-    PRINT_DOT("digraph MYG{\n");
+    PRINT_DOT("digraph MYG {\n");
     PRINT_DOT("rankdir = LR;\n");
+    PRINT_DOT("graph [splines = ortho];\n");
     PRINT_DOT("bgcolor = \"white\";\n");
 
     PRINT_DOT("node [shape = \"plaintext\", style = \"solid\"];\n");
     for (int i = 0; i < list->capacity; i++)
     {
+        if(i == list->free_index && getSizeOfFree(list) > 0)
+        {
+            PRINT_DOT("free [shape = \"circle\", style = \" filled\", filcolor = \"blue\"]; \n");
+            PRINT_DOT("{rank = same; free; node%d;}\n", i);
+        }
+
+        do{
         PRINT_DOT("node%d [\n"
                         "label=<\n"
                         
@@ -253,7 +261,7 @@ int graphDumpHtml(List *list)
             PRINT_DOT(      "    <tr><td bgcolor=\"yellow\" port = \"I%d\">I = %d</td></tr>\n", i, i);
         }
 
-        PRINT_DOT(      "    <tr><td bgcolor= \"lightblue\"><font color=\"#07077a\">VALUE = %d</font></td></tr>\n"
+        PRINT_DOT(      "    <tr><td bgcolor= \"lightblue\"><font color=\"#07077a\">VALUE = %c</font></td></tr>\n"
                         
                         "    <tr>\n"
                         "    <td>\n"
@@ -276,12 +284,14 @@ int graphDumpHtml(List *list)
                         
                         "</table>>\n"
                         "]\n\n", list->elements[i].value, list->elements[i].prev, i, list->elements[i].next);
+        }while(0);
+
     }
 
     PRINT_DOT("edge [weight = \"10000\", color = \"white\"];\n");
     for (int i = 0; i < list->capacity - 1; i++)
     {
-        fprintf(graph_log, "node%d -> node%d ", i, i+1);
+        PRINT_DOT("node%d -> node%d ", i, i+1);
 
     }
     PRINT_DOT(";\n");
@@ -295,44 +305,48 @@ int graphDumpHtml(List *list)
     {
         next_jumper = list->elements[jumper].next;
 
-        PRINT_DOT("node%d:N%d -> node%d:I%d  ", jumper, jumper, next_jumper, next_jumper);
+        // PRINT_DOT("node%d:N%d -> node%d:I%d  ", jumper, jumper, next_jumper, next_jumper);
+        PRINT_DOT("node%d -> node%d ", jumper, next_jumper);
 
         jumper = list->elements[jumper].next;
 
     }
     PRINT_DOT(";\n");
 
+
     PRINT_DOT("edge [weight = \"1\", color = blue];\n");
 
-    PRINT_DOT("free [shape = \"circle\", style = \" filled\", filcolor = \"blue\"]; \n");
-    PRINT_DOT("free -> node%ld  ", list->free_index);
-    
-    int counter = list->free_index;
-    int idx = 0;
-    while (counter < list->capacity)
+    if(getSizeOfFree(list) > 0)
+        PRINT_DOT("free -> node%ld  ", list->free_index);
+
+    if (getSizeOfFree(list) > 1)
     {
-        printf("%d\n", counter);
-        if (list->elements[counter].next == -1)
+        int counter = list->free_index;
+        int idx = 0;
+        while (counter < list->capacity)
         {
-            idx = counter + 1;
-            for (; idx < list->capacity; idx++)
-                if(list->elements[idx].next == -1)
-                {
-                    PRINT_DOT("node%d-> node%d  ", counter, idx);
-                    counter = idx;
-                    break;
-                }
-        } else 
-        {
-            counter++;
+            if (list->elements[counter].next == -1)
+            {
+                idx = counter + 1;
+                for (; idx < list->capacity; idx++)
+                    if(list->elements[idx].next == -1)
+                    {
+                        PRINT_DOT("node%d-> node%d  ", counter, idx);
+                        counter = idx;
+                        break;
+                    }
+            } else 
+            {
+                counter++;
+            }
+
+            if (counter == list->capacity - 1)
+                break;
+
         }
-
-        if (counter == list->capacity - 1)
-            break;
-
+        PRINT_DOT("node%d-> node%d  ", idx, list->free_index);
+        PRINT_DOT(";\n");
     }
-    PRINT_DOT(";\n");
-
     PRINT_DOT("\n}");
 
     fclose(graph_log);
@@ -375,6 +389,7 @@ int textDump(List *list, const char *name_of_file, const char *name_of_func, int
 
 int listDump(List *list , const char *name_of_file, const char *name_of_func, int number_of_line)
 {
+        
     textDump(list, name_of_file, name_of_func, number_of_line);
 
     // graphDumpDot(list);

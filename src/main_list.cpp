@@ -18,7 +18,7 @@ int main()
     listAddAfter(&list1, 'A', 2);
     listAddAfter(&list1, 'S', 2);
 
-    listDelAfter(&list1, 4);
+    listDelAfter(&list1, 1);
 
     listSort(&list1);
 

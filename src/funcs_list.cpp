@@ -43,7 +43,6 @@ int listCtor(List *list, size_t capacity, const char * string_capacity, const ch
 
     // stackCtor(list->free, list->capacity - list->elements[0].prev);
     // list->free = (List_elem *)calloc(list->capacity - getTail(list), sizeof(List_elem));
-
     fillWithPoison(list, initial_size, list->capacity);
         
     list->free_index = initial_size;
@@ -51,6 +50,8 @@ int listCtor(List *list, size_t capacity, const char * string_capacity, const ch
     list->code_of_error = 0;
 
     sprintf(list->operation_info, "func %s of %s capacity %s", __FUNCTION__, name_of_var, string_capacity);
+
+
 
     LIST_DUMP(list);
 
@@ -220,7 +221,6 @@ int getNextFree(List *list)
     }
 
     listResize(list, list->capacity * LIST_RESIZE_TO_STRETCH);
-    getNextFree(list);
 
     return -1;
 
@@ -270,12 +270,29 @@ int listAddBefore_(List *list, elem_d value, int index, const char *arg_value, c
     return tmp;
 }
 
+[[nodiscard]] int getSizeOfFree(List *list)
+{
+    int num = 0;
+    for (int i = 0; i < list->capacity; i++)
+    {
+        if (list->elements[i].next == -1)
+            num++;
+    }
+    return num;
+}
+
 int listDelAfter_(List *list, int index, const char * args)
 {
-    bool condition = index < 0 || index > getTail(list);
-    printf("%d %d %d\n", condition, index, getTail(list));
+    bool condition = index < 0 || index > list->capacity;
+    // printf("%d %d %d\n", condition, index, list->capacity);
 
     if (condition)
+    {
+        PARSE_ERROR(list, condition, LIST_ERROR_INVALID_INPUT_INDEX);
+        PRINT_ERR("CANNOT OPERATE: %s%s\n", __FUNCTION__, args);
+        return LIST_ERROR_INVALID_INPUT_INDEX;
+        
+    }else if(list->elements[index].next == -1)
     {
         PARSE_ERROR(list, condition, LIST_ERROR_INVALID_INPUT_INDEX);
         PRINT_ERR("CANNOT OPERATE: %s%s\n", __FUNCTION__, args);
@@ -382,11 +399,12 @@ int listSort(List *list)
 
     fillWithPoison(list, counter, list->capacity);
 
-    if (getHead(list) * LIST_RESIZE_TO_SHRINK < list->capacity)
+    if (getTail(list) * LIST_RESIZE_TO_SHRINK < list->capacity)
         listResize(list, list->capacity/2);
 
     sprintf(list->operation_info, "func %s", __FUNCTION__);
 
+    getNextFree(list);
     LIST_DUMP(list);
 
     return 1;
@@ -405,6 +423,8 @@ int listResize(List *list, size_t new_capacity)
     list->capacity = new_capacity;
 
     sprintf(list->operation_info, "func %s new capacity  %ld", __FUNCTION__, new_capacity);
+
+    getNextFree(list);
 
     LIST_DUMP(list);
 

@@ -63,6 +63,7 @@ int listAddBefore_(List *list, elem_d value, int index, const char *arg_value, c
 
 int listDtor(List *list);
 
+[[nodiscard]] int getSizeOfFree(List *list);
 //index of element after which we are going to paste new element
 int addElement(List *list, elem_d value, int index);
 //index of element which will be deletedint getNextFree(List *list)
