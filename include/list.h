@@ -1,7 +1,6 @@
 #ifndef LIST_H
 #define LIST_H
 
-#include "stack_funcs.h"
 #include <string.h>
 
 //DO NOT USE REALLOC YET
