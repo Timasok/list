@@ -9,4 +9,5 @@ SOURCES 	:= $(SRC_DIR)main_list.cpp $(SRC_DIR)funcs_list.cpp $(SRC_DIR)list_debu
 EXECUTABLE  := list
 
 all:
+	mkdir graph_dumps
 	$(CC) $(SOURCES) $(CFLAGS) -o $(EXECUTABLE)
